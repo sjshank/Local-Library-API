@@ -11,7 +11,7 @@ COPY . .
 
 ENV NODE_ENV='production'
 ENV MONGODB_URI='mongodb+srv://locallibrary:locallibrary2024@locallibrary.oktysx8.mongodb.net/local_library?retryWrites=true&w=majority'
-ENV RATE_LIMIT=20
+ENV RATE_LIMIT=10
 
 EXPOSE 3500
 
