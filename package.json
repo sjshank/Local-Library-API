@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www",
+    "dev": "PORT=8080 nodemon ./bin/www",
     "serverstart": "DEBUG=express-locallibrary-tutorial:* npm run devstart",
     "snyktest": "snyk test"
   },
   "dependencies": {
     "compression": "^1.7.4",
     "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
     "debug": "~2.6.9",
     "dotenv": "^16.3.2",
     "express": "^4.17.3",

@@ -24,7 +24,7 @@ const getBookById = asyncHandler(async (req, res) => {
     BookInstances.find({ book: req.params.id }).exec(),
   ]);
   if (book === null) {
-    res.status(200).json({ message: "No record found." });
+    res.status(404).json({ message: "No record found." });
   }
   res.status(200).json({
     book: book,
@@ -52,7 +52,7 @@ const createBook = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const bookObj = {
         title: req.body.title,
@@ -64,7 +64,7 @@ const createBook = [
       //Author & genre check added to ensure correct data. Not needed when integrate with UI
       const author = await Author.findById(req.body.author).exec();
       if (author == null) {
-        res.status(200).json({ message: "Author doesn't exist." });
+        res.status(404).json({ message: "Author doesn't exist." });
         return;
       }
       const allGenresPromises = [];
@@ -73,7 +73,7 @@ const createBook = [
       });
       const allGenreResult = await Promise.all(allGenresPromises);
       if (allGenreResult.includes(null)) {
-        res.status(200).json({ message: "One or more genre doesn't exist." });
+        res.status(404).json({ message: "One or more genre doesn't exist." });
         return;
       }
       const found = await Book.findOne({
@@ -82,11 +82,11 @@ const createBook = [
         isbn: bookObj.isbn,
       }).exec();
       if (found) {
-        res.status(200).json({ message: "Record already exist." });
+        res.status(409).json({ message: "Record already exist." });
       } else {
         const book = await Book.create(bookObj);
         book.save();
-        res.status(200).json(book);
+        res.status(201).json(book);
       }
     }
   }),
@@ -112,7 +112,7 @@ const updateBookById = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const bookObj = new Book({
         title: req.body.title,
@@ -125,7 +125,7 @@ const updateBookById = [
       //Author & genre check added to ensure correct data. Not needed when integrate with UI
       const author = await Author.findById(req.body.author).exec();
       if (author == null) {
-        res.status(200).json({ message: "Author doesn't exist." });
+        res.status(404).json({ message: "Author doesn't exist." });
         return;
       }
       const allGenresPromises = [];
@@ -134,11 +134,11 @@ const updateBookById = [
       });
       const allGenreResult = await Promise.all(allGenresPromises);
       if (allGenreResult.includes(null)) {
-        res.status(200).json({ message: "One or more genre doesn't exist." });
+        res.status(404).json({ message: "One or more genre doesn't exist." });
         return;
       }
       await Book.findByIdAndUpdate(req.params.id, bookObj, {});
-      res.status(200).json(bookObj);
+      res.status(202).json(bookObj);
     }
   }),
 ];
@@ -147,7 +147,7 @@ const updateBookById = [
 const deleteBookById = asyncHandler(async (req, res) => {
   const book = await Book.findById(req.params.id);
   if (book == null) {
-    res.status(200).json({ message: "Record doesn't exist." });
+    res.status(404).json({ message: "Record doesn't exist." });
     return;
   }
   const allBookInstances = await BookInstances.find({

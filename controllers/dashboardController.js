@@ -19,13 +19,33 @@ const retrieveDashboard = asyncHandler(async (req, res) => {
     Genre.countDocuments({}).exec(),
   ]);
 
-  res.json({
-    booksCount: numBooks,
-    bookInstancesCount: numBookInstances,
-    bookInstancesAvlCount: numBookInstancesAvl,
-    authorsCount: numAuthors,
-    genresCount: numGenres,
-  });
+  res.json([
+    {
+      label: "Books Listed",
+      count: numBooks,
+      muiIcon: "LibraryBooksRounded",
+    },
+    {
+      label: "Authors Registered",
+      count: numAuthors,
+      muiIcon: "SupervisedUserCircleRounded",
+    },
+    {
+      label: "Genres Available",
+      count: numGenres,
+      muiIcon: "CategoryRounded",
+    },
+    {
+      label: "Book Instances",
+      count: numBookInstances,
+      muiIcon: "ContentCopyRounded",
+    },
+    {
+      label: "Copies Available",
+      count: numBookInstancesAvl,
+      muiIcon: "EventAvailableRounded",
+    },
+  ]);
 });
 
 module.exports = retrieveDashboard;

@@ -10,3 +10,4 @@ logs/
 docs
 .env
 dist/
+.DS_store

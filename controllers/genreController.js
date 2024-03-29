@@ -18,7 +18,7 @@ const getGenreById = asyncHandler(async (req, res, next) => {
         Book.find({ genre: req.params.id }, "title summary").exec(),
       ]);
       if (genre === null) {
-        res.status(200).json({ message: "No record found." });
+        res.status(404).json({ message: "No record found." });
       }
       res.status(200).json({
         genre: genre,
@@ -28,7 +28,7 @@ const getGenreById = asyncHandler(async (req, res, next) => {
       res.status(500).json({ message: "Unable to process request." });
     }
   } catch (err) {
-    res.json({
+    res.status(503).json({
       message: "Unable to process request. Please try again after sometime",
     });
   }
@@ -45,15 +45,15 @@ const createGenre = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const found = await Genre.findOne({ name: req.body.name }).exec();
       if (found) {
-        res.status(200).json({ message: "Record already exist." });
+        res.status(409).json({ message: "Record already exist." });
       } else {
         const genre = await Genre.create({ name: req.body.name });
         genre.save();
-        res.status(200).json(genre);
+        res.status(201).json(genre);
       }
     }
   }),
@@ -70,18 +70,18 @@ const updateGenreById = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const found = await Genre.findById(req.params.id).exec();
       if (found == null) {
-        res.status(200).json({ message: "Record doesn't exist." });
+        res.status(409).json({ message: "Record doesn't exist." });
       } else {
         await Genre.findByIdAndUpdate(
           req.params.id,
           { name: req.body.name },
           {}
         );
-        res.status(200).json({ name: req.body.name });
+        res.status(202).json({ name: req.body.name });
       }
     }
   }),
@@ -91,7 +91,7 @@ const updateGenreById = [
 const deleteGenreById = asyncHandler(async (req, res, next) => {
   const genre = await Genre.findById(req.params.id);
   if (genre == null) {
-    res.status(200).json({ message: "Record doesn't exist." });
+    res.status(404).json({ message: "Record doesn't exist." });
     return;
   }
   const allBooks = await Book.find({

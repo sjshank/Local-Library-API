@@ -18,7 +18,7 @@ const getAuthorById = asyncHandler(async (req, res) => {
       .exec(),
   ]);
   if (author === null) {
-    res.status(200).json({ message: "No record found." });
+    res.status(404).json({ message: "No record found." });
   }
   res.status(200).json({
     author: author,
@@ -51,7 +51,7 @@ const createAuthor = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const authorObj = {
         first_name: req.body.first_name,
@@ -64,11 +64,11 @@ const createAuthor = [
         family_name: authorObj.family_name,
       }).exec();
       if (found) {
-        res.status(200).json({ message: "Record already exist." });
+        res.status(409).json({ message: "Record already exist." });
       } else {
         const author = await Author.create(authorObj);
         author.save();
-        res.status(200).json(author);
+        res.status(201).json(author);
       }
     }
   }),
@@ -100,7 +100,7 @@ const updateAuthorById = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const authorObj = new Author({
         first_name: req.body.first_name,
@@ -112,10 +112,10 @@ const updateAuthorById = [
       //Author check added to ensure correct data. Not needed when integrate with UI
       const found = await Author.findById(req.params.id).exec();
       if (found == null) {
-        res.status(200).json({ message: "Record doesn't exist." });
+        res.status(404).json({ message: "Record doesn't exist." });
       } else {
         await Author.findByIdAndUpdate(req.params.id, authorObj, {});
-        res.status(200).json(authorObj);
+        res.status(202).json(authorObj);
       }
     }
   }),
@@ -125,7 +125,7 @@ const updateAuthorById = [
 const deleteAuthorById = asyncHandler(async (req, res) => {
   const author = await Author.findById(req.params.id);
   if (!author) {
-    res.status(200).json({ message: "Record doesn't exist." });
+    res.status(404).json({ message: "Record doesn't exist." });
   } else {
     const allBooks = await Book.find({ author: author.id }).exec();
     const allBooksPromises = [];
