@@ -12,9 +12,12 @@ const getAllBookInstances = asyncHandler(async (req, res) => {
 //Get book instance details by id
 const getBookInstanceById = asyncHandler(async (req, res, next) => {
   const bookInstance = await BookInstance.findById(req.params.id).exec();
-  const book = await Book.findById(bookInstance.book._id).exec();
+  const book = await Book.findById(bookInstance.book._id)
+    .populate("author")
+    .populate("genre")
+    .exec();
   if (bookInstance === null) {
-    res.status(200).json({ message: "No record found." });
+    res.status(404).json({ message: "No record found." });
   }
   res.status(200).json({
     copy: bookInstance,
@@ -36,7 +39,7 @@ const createBookInstance = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const bookInstanceObj = {
         book: req.body.book,
@@ -47,12 +50,12 @@ const createBookInstance = [
       //Author & genre check added to ensure correct data. Not needed when integrate with UI
       const book = await Book.findById(req.body.book).exec();
       if (book == null) {
-        res.status(200).json({ message: "Book doesn't exist." });
+        res.status(404).json({ message: "Book doesn't exist." });
         return;
       }
       const bookInstance = await BookInstance.create(bookInstanceObj);
       bookInstance.save();
-      res.status(200).json(bookInstance);
+      res.status(201).json(bookInstance);
     }
   }),
 ];
@@ -71,7 +74,7 @@ const updateBookInstanceById = [
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(200).json({ message: result.array() });
+      res.status(422).json({ message: result.array()[0]["msg"] });
     } else {
       const bookInstanceObj = new BookInstance({
         book: req.body.book,
@@ -83,11 +86,11 @@ const updateBookInstanceById = [
       //book check added to ensure correct data. Not needed when integrate with UI
       const book = await Book.findById(req.body.book).exec();
       if (book == null) {
-        res.status(200).json({ message: "Book doesn't exist." });
+        res.status(404).json({ message: "Book doesn't exist." });
         return;
       }
       await BookInstance.findByIdAndUpdate(req.params.id, bookInstanceObj, {});
-      res.status(200).json(bookInstanceObj);
+      res.status(202).json(bookInstanceObj);
     }
   }),
 ];

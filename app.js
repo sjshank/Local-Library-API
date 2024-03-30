@@ -2,6 +2,7 @@ const createError = require("http-errors");
 const express = require("express");
 const app = express();
 const path = require("path");
+const cors = require("cors");
 //Load env file data
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
@@ -9,6 +10,7 @@ const logger = require("./middlewares/logger");
 const morgan = require("morgan");
 const limiter = require("./middlewares/limiter");
 const helmet = require("./config/helmet");
+const corsOption = require("./config/cors");
 const catalogRouter = require("./routes/catalog");
 //compress all the HTTP response
 const compression = require("compression");
@@ -23,18 +25,18 @@ app.set("view engine", "pug");
 
 app.use(
   morgan("combined", {
-    skip: function (req, res) {
-      return res.statusCode < 400;
-    },
+    // skip: function (req, res) {
+    //   return res.statusCode < 400;
+    // },
     stream: logger,
   })
 );
 
 // Apply rate limiter to all requests
 app.use(limiter);
+app.use(cors(corsOption));
 app.use(helmet());
 app.disable("x-powered-by");
-// app.use(logger("short"));
 app.use(compression()); // Compress all routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
