@@ -1,4 +1,4 @@
-const allowlist = ["http://localhost:3000"];
+const allowlist = ["http://localhost:3000", "https://ekitaab-store.vercel.app"];
 const corsOptionsDelegate = function (req, callback) {
   var corsOptions;
   if (allowlist.indexOf(req.header("Origin")) !== -1) {
